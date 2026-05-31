@@ -91,4 +91,4 @@ Requires R ≥ 4.0. The `nlcor` package installs from GitHub automatically.
 ## Contact
 
 Konstantina Gianniou  
-g.tem2106@gmail.com | LinkedIn | GitHub
+g.tem2106@gmail.com 
