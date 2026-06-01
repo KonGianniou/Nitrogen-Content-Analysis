@@ -70,7 +70,7 @@ L1_larva   <- filter(datalarva, Location == "L1")
 # Subgroup 2: L1 only (adults + larvae) — the ENA clade comparison
 dataTPE    <- filter(data, Location == "L1")
 adult      <- filter(dataTPE, Stage == "adult")
-larva_ath  <- filter(dataTPE, Stage == "larva")   # FIX: was "larva_" (unused trailing underscore)
+larva_ath  <- filter(dataTPE, Stage == "larva")  
 
 # Reciprocal transformation for weight
 data$W2      <- 1 / data$Weight
@@ -87,7 +87,7 @@ cat(sprintf("L1 subgroup: %d  (adults: %d, larvae: %d)\n\n",
 # ── 2. NORMALITY CHECKS ────────────────────────────────────────────────────────
 
 cat("── Shapiro-Wilk Normality Tests ─────────────────\n")
-# FIX: removed duplicate "Larvae L1 N" key (second entry silently overwrote the first)
+
 norm_groups <- list(
   "Larvae Weight"  = datalarva$Weight,
   "Larvae N"       = datalarva$N,
@@ -146,10 +146,8 @@ cat("Group means:\n")
 print(dataTPE %>% group_by(Stage) %>%
         summarise(n = n(), Mean_N = round(mean(N), 3), SD_N = round(sd(N), 3)))
 
-vt2 <- var.test(adult$N, larva_ath$N)   # FIX: was L1_larva (wrong subgroup — L1_larva
-                                          #      is larvae-only filtered from datalarva,
-                                          #      but for this comparison we need larvae
-                                          #      from dataTPE, i.e. larva_ath)
+vt2 <- var.test(adult$N, larva_ath$N)   
+                  
 cat(sprintf("\nF-test variances: F = %.3f, p = %.4f\n", vt2$statistic, vt2$p.value))
 
 tt2 <- t.test(N ~ Stage, data = dataTPE, alternative = "two.sided",
@@ -176,20 +174,16 @@ cat(sprintf("M2 Simple linear (1/Weight):     Adj R² = %.3f\n",
 
 # Model 3: Piecewise — Weight
 seg1 <- segmented(lm1, seg.Z = ~ Weight, psi = 0.05)
-# FIX: summary(seg)$adj.r.squared does not exist for segmented objects.
-#      Use summary(seg, short=FALSE)$r.sq instead, which returns the
-#      adjusted R² computed on the full piecewise fit.
+
 cat(sprintf("M3 Piecewise (Weight):           Adj R² = %.3f  breakpoint = %.4f\n",
             summary(seg1, short = FALSE)$r.sq,
-            seg1$psi[2]))   # FIX: psi is a named numeric vector [psi, Est., St.Err];
-                             #      [, "Est."] treats it as a matrix and errors.
-                             #      Use [2] or ["Est."] with single-bracket indexing.
-
+            seg1$psi[2]))   
+                  
 # Model 4: Piecewise — 1/Weight
 seg2 <- segmented(lm2, seg.Z = ~ W2, psi = 60)
 cat(sprintf("M4 Piecewise (1/Weight):         Adj R² = %.3f  breakpoint = %.3f\n",
             summary(seg2, short = FALSE)$r.sq,
-            seg2$psi[2]))   # FIX: same as above
+            seg2$psi[2]))   
 
 # Model 5: GLM — 1/Weight + Stage + Location
 glm1 <- glm(N ~ W2 + Stage + Location, data = data)
@@ -223,8 +217,7 @@ cat("\n── Generating plots ────────────────�
 
 # ── Plot 1: Non-linear correlation panels (Figure 1 equivalent) ──────────────
 
-# FIX: aes_string() was deprecated in ggplot2 v3.0 and removed in v3.5.
-#      Replace with aes() + .data[[]] pronoun for tidy evaluation.
+
 make_nlcor_scatter <- function(df, x_var, y_var, col_var, title, subtitle) {
   ggplot(df, aes(x = .data[[x_var]], y = .data[[y_var]],
                  colour = .data[[col_var]])) +
@@ -241,7 +234,7 @@ make_nlcor_scatter <- function(df, x_var, y_var, col_var, title, subtitle) {
 p1a <- make_nlcor_scatter(data,     "Weight", "N", "Stage",
   "a) All data", "r = 0.39, p < 0.01")
 p1b <- make_nlcor_scatter(dataTPE,  "Weight", "N", "Stage",
-  "b) Location 1 subgroup (adults + larvae)", "r = 0.72, p < 0.01")   # FIX: label updated
+  "b) Location 1 subgroup (adults + larvae)", "r = 0.72, p < 0.01")   
 p1c <- make_nlcor_scatter(datalarva,"Weight", "N", "Location",
   "c) Larvae subgroup (L1 + L2)", "r = 0.21, p = 0.07 (ns)")
 
@@ -296,7 +289,7 @@ ggsave("fig3_L1_stage.png", fig3, width = 6, height = 5, dpi = 150)
 # ── Plot 4: Piecewise regression on 1/Weight (Figure 4 equivalent) ───────────
 
 data$N_pred_seg2 <- predict(seg2, newdata = data.frame(W2 = data$W2))
-breakpt <- seg2$psi[2]   # FIX: consistent with corrected psi accessor above
+breakpt <- seg2$psi[2]   
 
 # Panel a: transformed scale
 p4a <- ggplot(data, aes(x = W2, y = N, colour = Stage)) +
@@ -329,7 +322,7 @@ fig4 <- p4a + p4b +
   plot_annotation(
     title    = "Figure 4: Piecewise linear regression — 1/Weight vs Nitrogen content",
     subtitle = sprintf("Breakpoint at 1/W = %.3f  |  Adj R² = %.3f", breakpt,
-                       summary(seg2, short = FALSE)$r.sq),   # FIX: consistent accessor
+                       summary(seg2, short = FALSE)$r.sq),   
     theme = theme(plot.title    = element_text(face = "bold", size = 13),
                   plot.subtitle = element_text(size = 10, colour = "grey40"))
   )
