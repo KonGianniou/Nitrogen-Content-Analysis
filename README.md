@@ -58,7 +58,7 @@ tpityocampa-nitrogen/
 |Non-linear correlation (Weight \~ N)|nlcor|`nlcor`|
 |Stage comparison (larvae vs adults)|Mann-Whitney U|`stats`|
 |Location comparison|Mann-Whitney U|`stats`|
-|Adults Ath vs Thess (small n)|Permutation test|`coin`|
+|Adults L1 vs L2 (small n)|Permutation test|`coin`|
 |Visualisation|Violin + boxplot|`ggplot2`|
 
 Non-parametric tests were chosen throughout due to the non-normal distribution of nitrogen values (confirmed by Shapiro-Wilk, p < 0.05 for most subgroups). For the adult L2 subgroup (n = 18), a permutation test was used instead of Mann-Whitney U due to small sample size.
